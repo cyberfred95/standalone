@@ -1,0 +1,17 @@
+{
+  "name": "lara-quality-test",
+  "version": "1.0.0",
+  "description": "Test du module qualité LaraTranslate",
+  "main": "test-quality.js",
+  "scripts": {
+    "test": "node test-quality.js",
+    "glossary:list": "node glossaires/list-glossaries.js",
+    "glossary:validate": "node glossaires/validate-glossaries.js",
+    "glossary:upload-test": "node glossaires/upload-glossary.js",
+    "glossary:upload-all": "node glossaires/upload-all-glossaries.js"
+  },
+  "dependencies": {
+    "@translated/lara": "^1.6.7",
+    "dotenv": "^16.0.0"
+  }
+}

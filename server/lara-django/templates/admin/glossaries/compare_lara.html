@@ -1,0 +1,392 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | Django site admin{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">Lara Translation Admin</a></h1>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .comparison-container {
+        padding: 20px;
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    .comparison-header {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        border-left: 4px solid #417690;
+    }
+
+    .comparison-header h1 {
+        margin: 0 0 10px 0;
+        color: #333;
+        font-size: 24px;
+    }
+
+    .comparison-header p {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+    }
+
+    .comparison-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .comparison-table thead {
+        background-color: #417690;
+        color: white;
+    }
+
+    .comparison-table th {
+        padding: 14px 12px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .comparison-table td {
+        padding: 12px;
+        border-bottom: 1px solid #e9ecef;
+        font-size: 14px;
+    }
+
+    .comparison-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .modification-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 12px;
+        text-transform: uppercase;
+    }
+
+    .modification-badge.nouveau {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .modification-badge.modifie {
+        background-color: #ffc107;
+        color: #333;
+    }
+
+    .type-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .type-badge.system {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    .type-badge.personal {
+        background-color: #2196F3;
+        color: white;
+    }
+
+    .type-badge.unknown {
+        background-color: #9e9e9e;
+        color: white;
+    }
+
+    .action-buttons {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.2s;
+    }
+
+    .btn-cancel {
+        background-color: #6c757d;
+        color: white !important;
+        text-decoration: none;
+    }
+
+    .btn-cancel:hover {
+        background-color: #5a6268;
+        color: white !important;
+        text-decoration: none;
+    }
+
+    .btn-apply {
+        background-color: #417690;
+        color: white;
+    }
+
+    .btn-apply:hover {
+        background-color: #2e5568;
+    }
+
+    .btn-apply:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    .no-differences {
+        padding: 40px;
+        text-align: center;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        color: #666;
+    }
+
+    .no-differences i {
+        font-size: 48px;
+        color: #28a745;
+        margin-bottom: 15px;
+    }
+
+    .lang-code {
+        font-family: monospace;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .checkbox-cell {
+        text-align: center;
+        width: 50px;
+    }
+
+    .checkbox-cell input[type="checkbox"] {
+        cursor: pointer;
+        width: 18px;
+        height: 18px;
+    }
+
+    .selection-info {
+        padding: 10px 15px;
+        background-color: #e7f3ff;
+        border-left: 4px solid #417690;
+        margin-bottom: 15px;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .selection-info strong {
+        color: #417690;
+    }
+
+    .uuid-cell {
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .filter-info {
+        margin-bottom: 15px;
+        padding: 10px 15px;
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'admin:glossaries_glossary_changelist' %}">Glossaries</a>
+    &rsaquo; Refresh from Lara
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="comparison-container">
+    <div class="comparison-header">
+        <h1><i class="ph-arrows-clockwise" style="margin-right: 10px;"></i>{{ title }}</h1>
+        <p>Comparaison entre les glossaires actuels et ceux de Lara Translation</p>
+    </div>
+
+    <div class="filter-info">
+        <i class="ph-calendar" style="margin-right: 6px;"></i>
+        Date de filtrage: <strong>{{ since_date }}</strong>
+    </div>
+
+    {% if differences %}
+    <div class="selection-info">
+        <span id="selection-count">0 changement(s) sélectionné(s)</span> sur {{ differences|length }} au total
+    </div>
+
+    <form method="post" action="{% url 'glossaries_apply_lara_changes' %}" id="changesForm">
+        {% csrf_token %}
+
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th class="checkbox-cell">
+                        <input type="checkbox" id="selectAll" title="Tout sélectionner">
+                    </th>
+                    <th>Glossary ID</th>
+                    <th>Name</th>
+                    <th>UUID</th>
+                    <th>Type</th>
+                    <th>Source</th>
+                    <th>Target(s)</th>
+                    <th>Domain</th>
+                    <th>Modification</th>
+                    <th>Détails</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for diff in differences %}
+                <tr>
+                    <td class="checkbox-cell">
+                        <input type="checkbox" name="selected_changes" value="{{ forloop.counter0 }}" class="change-checkbox">
+                    </td>
+                    <td><code style="font-size: 11px;">{{ diff.glossary_id }}</code></td>
+                    <td>{{ diff.name }}</td>
+                    <td class="uuid-cell" title="{{ diff.uuid }}">
+                        {% if diff.uuid == '*' %}
+                            <span style="color: #4CAF50; font-weight: bold;">*</span>
+                        {% elif diff.uuid %}
+                            {{ diff.uuid|truncatechars:12 }}
+                        {% else %}
+                            <span style="color: #999;">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if diff.type == 'system' %}
+                            <span class="type-badge system">Système</span>
+                        {% elif diff.type == 'personal' %}
+                            <span class="type-badge personal">Personnel</span>
+                        {% else %}
+                            <span class="type-badge unknown">Inconnu</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="lang-code">{{ diff.source_language|default:"-" }}</span></td>
+                    <td><span class="lang-code">{{ diff.target_languages|default:"-" }}</span></td>
+                    <td>{{ diff.domain|default:"-" }}</td>
+                    <td>
+                        {% if 'nouveau' in diff.modification %}
+                            <span class="modification-badge nouveau">{{ diff.modification }}</span>
+                        {% else %}
+                            <span class="modification-badge modifie">{{ diff.modification }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if diff.changes_detail %}
+                            <span style="font-size: 12px; color: #495057;">{{ diff.changes_detail }}</span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <input type="hidden" name="all_differences" value="{{ differences_json }}">
+
+        <div class="action-buttons">
+            <a href="{% url 'admin:glossaries_glossary_changelist' %}" class="btn btn-cancel">
+                <i class="ph-x" style="margin-right: 6px;"></i>Annuler
+            </a>
+            <button type="submit" class="btn btn-apply" id="applyBtn" disabled>
+                <i class="ph-check" style="margin-right: 6px;"></i>Appliquer (<span id="apply-count">0</span>)
+            </button>
+        </div>
+    </form>
+
+    {% else %}
+    <div class="no-differences">
+        <i class="ph-check-circle"></i>
+        <h2>Aucune différence détectée</h2>
+        <p>Les glossaires sont synchronisés avec Lara Translation</p>
+        <div style="margin-top: 20px;">
+            <a href="{% url 'admin:glossaries_glossary_changelist' %}" class="btn btn-cancel">
+                <i class="ph-arrow-left" style="margin-right: 6px;"></i>Retour
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const changeCheckboxes = document.querySelectorAll('.change-checkbox');
+    const applyBtn = document.getElementById('applyBtn');
+    const selectionCount = document.getElementById('selection-count');
+    const applyCount = document.getElementById('apply-count');
+
+    function updateSelectionCount() {
+        const selectedCount = document.querySelectorAll('.change-checkbox:checked').length;
+        selectionCount.textContent = `${selectedCount} changement(s) sélectionné(s)`;
+        applyCount.textContent = selectedCount;
+
+        // Enable/disable Apply button
+        applyBtn.disabled = selectedCount === 0;
+
+        // Update select all checkbox state
+        if (selectedCount === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        } else if (selectedCount === changeCheckboxes.length) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+        } else {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true;
+        }
+    }
+
+    // Select all functionality
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            changeCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateSelectionCount();
+        });
+    }
+
+    // Individual checkbox change
+    changeCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectionCount);
+    });
+
+    // Initial count
+    updateSelectionCount();
+});
+</script>
+{% endblock %}

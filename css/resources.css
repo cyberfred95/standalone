@@ -1,0 +1,179 @@
+/* ===========================================
+   RESOURCES STYLES
+   Resources table, filters, info box
+   =========================================== */
+
+/* Info Box */
+.resources-info {
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background-color: #f0f9ff;
+    border-left: 4px solid #0ea5e9;
+    border-radius: 4px;
+}
+
+.resources-info p {
+    margin: 0;
+    color: #075985;
+    font-size: 14px;
+}
+
+/* Tabs */
+.resources-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.resource-tab {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+    transition: all 0.2s;
+}
+
+.resource-tab:hover {
+    color: #059669;
+    background-color: #f0fdf4;
+}
+
+.resource-tab.active {
+    color: #059669;
+    border-bottom-color: #059669;
+}
+
+/* Table Container */
+.resources-table-container {
+    max-height: 70vh;
+    overflow-y: auto;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+#resourcesTableContainer {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* Table */
+.resources-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.resources-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.resources-table th {
+    background: linear-gradient(to bottom, #059669, #047857);
+    color: white;
+    font-weight: 600;
+    text-align: left;
+    padding: 14px 16px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.resources-table th:first-child {
+    border-radius: 8px 0 0 0;
+}
+
+.resources-table th:last-child {
+    border-radius: 0 8px 0 0;
+}
+
+.resources-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    vertical-align: middle;
+}
+
+.resources-table tbody tr {
+    transition: background-color 0.15s;
+}
+
+.resources-table tbody tr:hover {
+    background-color: #f0fdf4;
+}
+
+.resources-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Cells */
+.resource-name-cell {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.resource-id-cell {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.resource-lang-tag {
+    display: inline-block;
+    background-color: #e0e7ff;
+    color: #3730a3;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    margin-right: 4px;
+    font-weight: 600;
+}
+
+.resource-domain-tag {
+    display: inline-block;
+    background-color: #ecfccb;
+    color: #3f6212;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    margin-right: 4px;
+    margin-bottom: 4px;
+}
+
+/* Filters */
+.resources-filters {
+    background: #f9fafb;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Count */
+.resources-count {
+    padding: 10px 16px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    font-size: 12px;
+    color: #6b7280;
+    text-align: right;
+}
+
+/* States */
+.resources-loading,
+.resources-empty,
+.resources-error {
+    text-align: center;
+    padding: 40px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.resources-error {
+    color: #dc2626;
+}

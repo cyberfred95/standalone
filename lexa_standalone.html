@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lexamt Traducteur juridique</title>
+    <!-- CSS modulaire -->
+    <link rel="stylesheet" href="css/base.css?v=8">
+    <link rel="stylesheet" href="css/forms.css?v=8">
+    <link rel="stylesheet" href="css/components.css?v=15">
+    <link rel="stylesheet" href="css/modals.css?v=15">
+    <link rel="stylesheet" href="css/glossary.css?v=15">
+    <link rel="stylesheet" href="css/translation.css?v=15">
+    <link rel="stylesheet" href="css/templates.css?v=15">
+    <link rel="stylesheet" href="css/domains.css?v=15">
+    <link rel="stylesheet" href="css/glossaries.css?v=15">
+    <link rel="stylesheet" href="css/memories.css?v=15">
+    <link rel="stylesheet" href="css/resources.css?v=15">
+    <script src="js/config.js?v=20"></script>
+    <script src="js/utils.js?v=17"></script>
+    <script src="js/files.js?v=16"></script>
+    <script src="js/lexa.js?v=17"></script>
+    <script src="js/lara.js?v=18"></script>
+    <script src="js/ui.js?v=16"></script>
+    <script src="js/domains.js?v=16"></script>
+    <script src="js/glossaries.js?v=16"></script>
+    <script src="js/memories.js?v=16"></script>
+    <script src="js/resources.js?v=16"></script>
+    <script src="js/init.js?v=1"></script>
+</head>
+
+<body>
+    <!-- Menu burger -->
+    <button class="burger-btn-simple" id="burgerBtn" title="Menu">☰</button>
+    <div class="burger-dropdown-simple" id="burgerDropdown">
+        <button class="burger-item" id="setupMenuItem">⚙️ Setup</button>
+        <button class="burger-item" id="templatesMenuItem">📋 Templates</button>
+        <button class="burger-item" id="domainsMenuItem">🌐 Domaines</button>
+        <button class="burger-item" id="glossariesMenuItem">📚 Glossaires</button>
+        <button class="burger-item" id="memoriesMenuItem">🧠 Mémoires</button>
+        <button class="burger-item" id="resourcesMenuItem">📦 Ressources</button>
+        <button class="burger-item" id="docApiMenuItem">📚 Doc API</button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <img src="https://lexamt.com/wp-content/uploads/2024/11/logo_lexa.svg" alt="Lexamt Logo" />
+            </div>
+            <div class="subtitle">
+                <span class="title-blue"> Traduction </span>
+                <span class="title-green"> juridique </span>
+                <span class="title-blue"> professionnelle</span>
+                <span class="title-blue"> - Mode : </span>
+                <span class="title-green" id="currentServiceMode">À choisir</span>
+            </div>
+        </div>
+
+        <div class="language-style-row">
+            <div class="form-group language-group" style="grid-column: span 2;">
+                <div style="display: grid; grid-template-columns: 1fr 40px 1fr; align-items: end; gap: 8px;">
+                    <div>
+                        <label for="sourceLang">Source</label>
+                        <select id="sourceLang" disabled style="height: 38px;">
+                            <option value="">Chargement des langues...</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; padding-bottom: 4px;">
+                        <button class="swap-btn" id="swapBtn" title="Inverser les langues">⇄</button>
+                    </div>
+                    <div>
+                        <label for="targetLang">Cible</label>
+                        <select id="targetLang" disabled style="height: 38px;">
+                            <option value="">Chargement des langues...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" id="domainGroup">
+                <label for="domain">Domaine</label>
+                <select id="domain" style="height: 38px;">
+                    <option value="">Sélectionnez un domaine</option>
+                </select>
+            </div>
+
+            <div class="form-group template-group" id="laraTemplateSection" style="display: none;">
+                <label for="laraTemplateMain">Template de traduction</label>
+                <select id="laraTemplateMain" style="height: 38px;">
+                    <option value="">Chargement des templates...</option>
+                </select>
+                <div class="help-text" id="templateHelpText"
+                    style="display: none; margin-top: 4px; font-size: 12px; color: #6b7280;">
+
+                </div>
+            </div>
+
+            <div class="form-group" id="laraFixTextSection" style="display: none;">
+                <label for="fixTextSwitch" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="fixTextSwitch" style="width: auto; cursor: pointer;">
+                    <span>Fix text</span>
+                </label>
+                <div class="help-text">
+                    Corriger le HTML avant traduction
+                </div>
+            </div>
+
+        </div>
+
+        <div id="selectedTemplateInfo" style="display: none; margin-bottom: 16px;">
+            <div
+                style="background: #f0fdf4; border: 1px solid #10b981; padding: 8px 12px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                <span style="color: #047857; font-weight: 600;">📋 Configuration automatique:</span>
+                <span id="selectedTemplateMemory" style="color: #065f46;"></span>
+                <span id="selectedTemplateGlossary" style="color: #065f46;"></span>
+            </div>
+        </div>
+
+        <div class="form-group" id="glossarySection" style="display: none;">
+            <label>Glossaire par défaut (optionnel)</label>
+            <div class="glossary-section">
+                <div class="glossary-select">
+                    <select id="glossary" disabled>
+                        <option value="">Sélectionnez d'abord un domaine</option>
+                    </select>
+                </div>
+                <div class="glossary-buttons">
+                    <button class="personal-glossary-btn" id="personalGlossariesBtn" type="button">
+                        👤 Personnels
+                    </button>
+                    <button class="add-glossary-btn" id="addGlossaryBtn" type="button">
+                        + Ajouter
+                    </button>
+                </div>
+            </div>
+            <div id="selectedPersonalGlossary" style="display: none;" class="selected-glossary-info">
+                Glossaire personnel sélectionné: <span id="selectedPersonalGlossaryName"></span>
+                <button onclick="clearPersonalGlossary()"
+                    style="margin-left: 8px; background: none; border: none; color: #059669; cursor: pointer;">✕</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="mode-selector">
+                <button class="mode-btn active" id="textModeBtn" type="button">Mode Texte</button>
+                <button class="mode-btn" id="fileModeBtn" type="button">Mode Fichier</button>
+            </div>
+
+            <div id="textMode" class="translation-area">
+                <div class="translation-columns">
+                    <div class="translation-column">
+                        <label for="sourceText">Texte à traduire</label>
+                        <textarea id="sourceText" placeholder="Entrez le texte à traduire ici..."></textarea>
+                    </div>
+                    <div class="translation-column">
+                        <label for="resultText">Texte traduit</label>
+                        <textarea id="resultText" readonly placeholder="La traduction apparaîtra ici..."></textarea>
+                    </div>
+                </div>
+                <div id="qualityFeedback" style="display: none; margin-top: 16px;">
+                    <div
+                        style="background: #eff6ff; border: 1px solid #3b82f6; color: #1e40af; padding: 12px; border-radius: 6px;">
+                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 18px; margin-right: 8px;">✨</span>
+                            <strong style="font-size: 14px;">Module Qualité Lara</strong>
+                        </div>
+                        <div id="qualityFeedbackText" style="white-space: pre-wrap; font-size: 13px; line-height: 1.5;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="fileMode" class="form-group" style="display: none;">
+                <label>Fichiers à traduire</label>
+                <div class="file-upload" id="fileUpload">
+                    <div class="file-upload-text">
+                        Cliquez pour sélectionner des fichiers ou glissez-déposez ici
+                    </div>
+                    <input type="file" id="fileInput" multiple accept=".pdf,.docx,.doc,.txt,.rtf,.odt" />
+                    <div class="file-list" id="fileList"></div>
+                </div>
+            </div>
+
+            <!-- Instructions Lara (visible uniquement si Lara est sélectionné) -->
+            <div id="laraInstructionsSection" class="form-group" style="display: none;">
+                <label for="laraInstructionsMain">Instructions personnalisées (optionnel)</label>
+                <textarea id="laraInstructionsMain" placeholder="Ex: Soyez formel, Utilisez un ton professionnel..."
+                    style="height: 60px;"></textarea>
+                <div class="help-text">
+                    Ajoutez des instructions pour personnaliser le style de traduction
+                </div>
+            </div>
+        </div>
+
+        <button class="translate-btn" id="translateBtn">
+            Traduire
+        </button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            Traduction en cours...
+        </div>
+
+        <div class="result-section" id="resultSection" style="display: none;">
+            <label>Résultat de la traduction :</label>
+            <div id="textResult" style="display: none;">
+                <textarea id="resultText" readonly></textarea>
+            </div>
+            <div id="qualityFeedback" style="display: none; margin-top: 12px;">
+                <div
+                    style="background: #eff6ff; border: 1px solid #3b82f6; color: #1e40af; padding: 12px; border-radius: 6px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 18px; margin-right: 8px;">✨</span>
+                        <strong style="font-size: 14px;">Module Qualité Lara</strong>
+                    </div>
+                    <div id="qualityFeedbackText" style="white-space: pre-wrap; font-size: 13px; line-height: 1.5;">
+                    </div>
+                </div>
+            </div>
+            <div id="fileResults" style="display: none;"></div>
+        </div>
+
+        <div id="message"></div>
+    </div>
+
+    <!-- Modal pour ajouter un glossaire -->
+    <div id="glossaryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Ajouter un glossaire personnel</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+
+            <div class="form-group">
+                <label for="glossaryName">Nom du glossaire</label>
+                <input type="text" id="glossaryName" placeholder="Entrez le nom du glossaire" />
+            </div>
+
+            <div class="form-group">
+                <label>Langues du glossaire</label>
+                <div class="language-row">
+                    <div>
+                        <select id="glossarySourceLang">
+                            <option value="fr">Français</option>
+                        </select>
+                    </div>
+                    <div style="text-align: center; padding: 8px;">→</div>
+                    <div>
+                        <select id="glossaryTargetLang">
+                            <option value="en">Anglais</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Fichier CSV</label>
+                <div class="csv-upload" id="csvUpload">
+                    <div id="csvUploadText">
+                        📄 Cliquez pour sélectionner un fichier CSV<br>
+                        ou glissez-déposez ici
+                    </div>
+                    <input type="file" id="csvInput" accept=".csv" />
+                </div>
+                <div class="csv-info">
+                    Format attendu: CSV avec colonnes "source" et "target"<br>
+                    Exemple: source,target<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bonjour,hello<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;merci,thank you
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn-cancel" id="cancelGlossary">Annuler</button>
+                <button class="btn-create" id="createGlossary" disabled>Créer le glossaire</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour les glossaires personnels -->
+    <div id="personalGlossariesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Glossaires personnels</h3>
+                <button class="modal-close" id="personalModalClose">&times;</button>
+            </div>
+
+            <div id="personalGlossariesList" class="glossary-list">
+                <div class="empty-glossaires">
+                    <div class="spinner"></div>
+                    Chargement des glossaires...
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn-cancel" id="cancelPersonalGlossaries">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour les paramètres -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Paramètres</h3>
+                <button class="modal-close" id="settingsModalClose">&times;</button>
+            </div>
+
+            <div class="form-group">
+                <label for="translationService">Service de traduction</label>
+                <select id="translationService">
+                    <option value="lexa">Lexa (Lexamt)</option>
+                    <option value="lara">Lara (LaraTranslate)</option>
+                </select>
+            </div>
+
+            <!-- Clé API Lexa (toujours visible car nécessaire pour les deux services) -->
+            <div class="form-group">
+                <label for="lexaApiKey">Clé API Lexamt</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="lexaApiKey" placeholder="Entrez votre clé API Lexa" />
+                    <button type="button" class="toggle-password-btn" data-target="lexaApiKey"
+                        title="Afficher/masquer">👁</button>
+                </div>
+                <div class="help-text" id="lexaApiKeyHelp">
+                    Cette clé est nécessaire pour accéder aux services de traduction Lexamt
+                </div>
+            </div>
+
+            <!-- Paramètres Lara (visibles uniquement si Lara est sélectionné) -->
+            <div id="laraSettings" class="hidden">
+                <div class="form-group">
+                    <label for="laraAccessKeyId">Access Key ID (Lara)</label>
+                    <input type="text" id="laraAccessKeyId" placeholder="Entrez votre Access Key ID" />
+                </div>
+
+                <div class="form-group">
+                    <label for="laraAccessKeySecret">Access Key Secret (Lara)</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="laraAccessKeySecret" placeholder="Entrez votre Access Key Secret" />
+                        <button type="button" class="toggle-password-btn" data-target="laraAccessKeySecret"
+                            title="Afficher/masquer">👁</button>
+                    </div>
+                    <div class="help-text">
+                        Obtenez vos clés API depuis votre compte LaraTranslate
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="laraStyle">Style de traduction</label>
+                    <select id="laraStyle">
+                        <option value="faithful">Faithful (Fidèle)</option>
+                        <option value="fluid">Fluid (Fluide)</option>
+                        <option value="creative">Creative (Créatif)</option>
+                    </select>
+                    <div class="help-text">
+                        Choisissez le style de traduction à utiliser par défaut
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="laraMemoryIds">IDs de mémoires de traduction (optionnel)</label>
+                    <input type="text" id="laraMemoryIds" placeholder="Ex: 123, 456, 789" />
+                    <div class="help-text">
+                        IDs séparés par des virgules. Laissez vide pour utiliser toutes les mémoires du compte
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="laraGlossaryIds">IDs de glossaires (optionnel)</label>
+                    <input type="text" id="laraGlossaryIds" placeholder="Ex: 123, 456, 789" />
+                    <div class="help-text">
+                        IDs de glossaires séparés par des virgules
+                    </div>
+                </div>
+            </div>
+
+            <div id="settingsMessage" style="margin-top: 16px;"></div>
+
+            <div class="modal-buttons">
+                <button class="btn-cancel" id="cancelSettings">Fermer</button>
+                <button class="btn-create" id="saveSettings">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen pour les templates de traduction -->
+    <div id="templatesScreen" class="screen" style="display: none;">
+        <div class="screen-header">
+            <h2 class="screen-title">Configuration des Templates de Traduction Lara</h2>
+        </div>
+
+        <div class="screen-content">
+            <div class="templates-info">
+                <p>Ces templates définissent quelle mémoire de traduction et quel glossaire Lara utiliser pour chaque
+                    combinaison de domaine et de langues.</p>
+            </div>
+
+            <div id="templatesTableContainer" class="templates-table-container">
+                <div id="templatesTableContent">
+                    <div class="templates-loading">Chargement des templates...</div>
+                </div>
+            </div>
+
+            <div id="templatesMessage" style="margin-top: 16px;"></div>
+
+            <div style="text-align: center; margin-top: 24px;">
+                <button class="back-btn-center" id="backFromTemplates">← Retour</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen pour les domaines -->
+    <div id="domainsScreen" class="screen" style="display: none;">
+        <div class="screen-header">
+            <h2 class="screen-title">Gestion des Domaines</h2>
+        </div>
+
+        <div class="screen-content">
+            <div class="domains-info">
+                <p>Liste des domaines et de leurs proximités définis dans le système.</p>
+            </div>
+
+            <div id="domainsTableContainer" class="domains-table-container">
+                <div id="domainsTableContent">
+                    <div class="domains-loading">Chargement des domaines...</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 24px;">
+                <button class="back-btn-center" id="backFromDomains">← Retour</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen pour les glossaires -->
+    <div id="glossariesScreen" class="screen" style="display: none;">
+        <div class="screen-header">
+            <h2 class="screen-title">Gestion des Glossaires Lara</h2>
+        </div>
+
+        <div class="screen-content">
+            <div class="glossaries-info">
+                <p>Liste des glossaires disponibles dans le système Lara.</p>
+            </div>
+
+            <div id="glossariesTableContainer" class="glossaries-table-container">
+                <div id="glossariesTableContent">
+                    <div class="glossaries-loading">Chargement des glossaires...</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 24px;">
+                <button class="back-btn-center" id="backFromGlossaries">← Retour</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen pour les mémoires -->
+    <div id="memoriesScreen" class="screen" style="display: none;">
+        <div class="screen-header">
+            <h2 class="screen-title">Gestion des Mémoires de Traduction Lara</h2>
+        </div>
+
+        <div class="screen-content">
+            <div class="memories-info">
+                <p>Liste des mémoires de traduction disponibles dans le système Lara.</p>
+            </div>
+
+            <div id="memoriesTableContainer" class="memories-table-container">
+                <div id="memoriesTableContent">
+                    <div class="memories-loading">Chargement des mémoires...</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 24px;">
+                <button class="back-btn-center" id="backFromMemories">← Retour</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen pour les ressources -->
+    <div id="resourcesScreen" class="screen" style="display: none;">
+        <div class="screen-header">
+            <h2 class="screen-title">Gestion des Ressources Lara</h2>
+        </div>
+
+        <div class="screen-content">
+            <div class="resources-info">
+                <p>Vue consolidée des mémoires de traduction et glossaires disponibles dans le système Lara (fichier
+                    lara-resources.json).</p>
+            </div>
+
+            <div class="resources-tabs">
+                <button class="resource-tab active" id="memoriesTabBtn">Mémoires de traduction</button>
+                <button class="resource-tab" id="glossariesTabBtn">Glossaires</button>
+            </div>
+
+            <div id="resourcesTableContainer" class="resources-table-container">
+                <div id="resourcesTableContent">
+                    <div class="resources-loading">Chargement des ressources...</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 24px;">
+                <button class="back-btn-center" id="backFromResources">← Retour</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

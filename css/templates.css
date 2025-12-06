@@ -1,0 +1,197 @@
+/* ===========================================
+   TEMPLATES STYLES
+   Templates table, filters, info box
+   =========================================== */
+
+/* Info Box */
+.templates-info {
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background-color: #f0f9ff;
+    border-left: 4px solid #0ea5e9;
+    border-radius: 4px;
+}
+
+.templates-info p {
+    margin: 0;
+    color: #075985;
+    font-size: 14px;
+}
+
+/* Table Container */
+.templates-table-container {
+    max-height: 70vh;
+    overflow-y: auto;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+#templatesTableContainer {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* Table */
+.templates-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.templates-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.templates-table th {
+    background: linear-gradient(to bottom, #059669, #047857);
+    color: white;
+    font-weight: 600;
+    text-align: left;
+    padding: 14px 16px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.templates-table th:first-child {
+    border-radius: 8px 0 0 0;
+}
+
+.templates-table th:last-child {
+    border-radius: 0 8px 0 0;
+}
+
+.templates-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    vertical-align: middle;
+}
+
+.templates-table tbody tr {
+    transition: background-color 0.15s;
+}
+
+.templates-table tbody tr:hover {
+    background-color: #f0fdf4;
+}
+
+.templates-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.templates-table tbody tr:last-child td:first-child {
+    border-radius: 0 0 0 8px;
+}
+
+.templates-table tbody tr:last-child td:last-child {
+    border-radius: 0 0 8px 0;
+}
+
+/* Template Cells */
+.template-name-cell {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.template-row-default {
+    background-color: #fffbeb;
+}
+
+.template-row-default:hover {
+    background-color: #fef3c7 !important;
+}
+
+.template-empty {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* Filters */
+.templates-filters {
+    background: #f9fafb;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.filters-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-input {
+    flex: 1;
+    min-width: 100px;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.filter-input:focus {
+    outline: none;
+    border-color: #059669;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+.filter-input::placeholder {
+    color: #9ca3af;
+}
+
+.clear-filters-btn {
+    padding: 8px 14px;
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+    white-space: nowrap;
+}
+
+.filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #374151;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.filter-checkbox input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+/* Count */
+.templates-count {
+    padding: 10px 16px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    font-size: 12px;
+    color: #6b7280;
+    text-align: right;
+}
+
+/* States */
+.templates-loading,
+.templates-empty,
+.templates-error {
+    text-align: center;
+    padding: 40px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.templates-error {
+    color: #dc2626;
+}

@@ -1,0 +1,196 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}Chargement des glossaires | Django site admin{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">Lara Translation Admin</a></h1>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .loading-container {
+        padding: 40px 20px;
+        max-width: 600px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .loading-header {
+        margin-bottom: 40px;
+    }
+
+    .loading-header h1 {
+        color: #333;
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .loading-header p {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .progress-container {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .progress-bar-wrapper {
+        background-color: #e9ecef;
+        border-radius: 8px;
+        height: 24px;
+        overflow: hidden;
+        margin-bottom: 15px;
+    }
+
+    .progress-bar {
+        background-color: #417690;
+        height: 100%;
+        width: 0%;
+        transition: width 0.3s ease;
+        border-radius: 8px;
+    }
+
+    .progress-text {
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .progress-detail {
+        font-size: 12px;
+        color: #666;
+        min-height: 20px;
+    }
+
+    .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #417690;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 10px;
+        vertical-align: middle;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .error-message {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 4px;
+        margin-top: 20px;
+        display: none;
+    }
+
+    .cancel-btn {
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #6c757d;
+        color: white !important;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .cancel-btn:hover {
+        background-color: #5a6268;
+        color: white !important;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'admin:glossaries_glossary_changelist' %}">Glossaries</a>
+    &rsaquo; Chargement...
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="loading-container">
+    <div class="loading-header">
+        <h1><span class="spinner"></span>Chargement des glossaires</h1>
+        <p>Récupération des données depuis Lara Translation...</p>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-text">
+            <span id="progress-percent">0</span>% - <span id="progress-count">0</span> / <span id="progress-total">?</span> glossaires
+        </div>
+        <div class="progress-bar-wrapper">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="progress-detail" id="progress-detail">
+            Initialisation...
+        </div>
+    </div>
+
+    <div class="error-message" id="error-message"></div>
+
+    <a href="{% url 'admin:glossaries_glossary_changelist' %}" class="cancel-btn">
+        <i class="ph-x" style="margin-right: 6px;"></i>Annuler
+    </a>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBar = document.getElementById('progress-bar');
+    const progressPercent = document.getElementById('progress-percent');
+    const progressCount = document.getElementById('progress-count');
+    const progressTotal = document.getElementById('progress-total');
+    const progressDetail = document.getElementById('progress-detail');
+    const errorMessage = document.getElementById('error-message');
+
+    // Build SSE URL with since_date parameter
+    const sinceDate = '{{ since_date|default:"" }}';
+    let sseUrl = '{% url "glossaries_fetch_progress" %}';
+    if (sinceDate) {
+        sseUrl += '?since_date=' + encodeURIComponent(sinceDate);
+    }
+
+    const eventSource = new EventSource(sseUrl);
+
+    eventSource.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'progress') {
+            const percent = Math.round((data.current / data.total) * 100);
+            progressBar.style.width = percent + '%';
+            progressPercent.textContent = percent;
+            progressCount.textContent = data.current;
+            progressTotal.textContent = data.total;
+            progressDetail.textContent = data.message || '';
+        } else if (data.type === 'complete') {
+            eventSource.close();
+            // Redirect to comparison page with the data
+            window.location.href = '{% url "glossaries_compare_lara" %}?from_loading=1&since_date=' + encodeURIComponent(sinceDate);
+        } else if (data.type === 'error') {
+            eventSource.close();
+            errorMessage.textContent = data.message;
+            errorMessage.style.display = 'block';
+            progressDetail.textContent = 'Erreur';
+        }
+    };
+
+    eventSource.onerror = function() {
+        eventSource.close();
+        errorMessage.textContent = 'Connexion perdue avec le serveur';
+        errorMessage.style.display = 'block';
+    };
+});
+</script>
+{% endblock %}

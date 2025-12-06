@@ -1,0 +1,141 @@
+/* ===========================================
+   GLOSSARIES STYLES
+   Glossaries table, filters, info box
+   =========================================== */
+
+/* Info Box */
+.glossaries-info {
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background-color: #f0f9ff;
+    border-left: 4px solid #0ea5e9;
+    border-radius: 4px;
+}
+
+.glossaries-info p {
+    margin: 0;
+    color: #075985;
+    font-size: 14px;
+}
+
+/* Table Container */
+.glossaries-table-container {
+    max-height: 70vh;
+    overflow-y: auto;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+#glossariesTableContainer {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* Table */
+.glossaries-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.glossaries-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.glossaries-table th {
+    background: linear-gradient(to bottom, #059669, #047857);
+    color: white;
+    font-weight: 600;
+    text-align: left;
+    padding: 14px 16px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.glossaries-table th:first-child {
+    border-radius: 8px 0 0 0;
+}
+
+.glossaries-table th:last-child {
+    border-radius: 0 8px 0 0;
+}
+
+.glossaries-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    vertical-align: middle;
+}
+
+.glossaries-table tbody tr {
+    transition: background-color 0.15s;
+}
+
+.glossaries-table tbody tr:hover {
+    background-color: #f0fdf4;
+}
+
+.glossaries-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Cells */
+.glossary-name-cell {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.glossary-lang-tag {
+    display: inline-block;
+    background-color: #e0e7ff;
+    color: #3730a3;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    margin-right: 4px;
+    font-weight: 600;
+}
+
+.glossary-domain-tag {
+    display: inline-block;
+    background-color: #ecfccb;
+    color: #3f6212;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+/* Filters */
+.glossaries-filters {
+    background: #f9fafb;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Count */
+.glossaries-count {
+    padding: 10px 16px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    font-size: 12px;
+    color: #6b7280;
+    text-align: right;
+}
+
+/* States */
+.glossaries-loading,
+.glossaries-empty,
+.glossaries-error {
+    text-align: center;
+    padding: 40px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.glossaries-error {
+    color: #dc2626;
+}

@@ -1,0 +1,43 @@
+services:
+  # Serveur Node.js avec le SDK Lara
+  lara-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: lara-translation-server
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+    volumes:
+      # Monter le répertoire uploads pour la persistance (optionnel)
+      - ./server/uploads:/app/uploads
+    restart: unless-stopped
+    networks:
+      - lexamt-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Serveur web pour l'interface HTML (nginx)
+  web-interface:
+    image: nginx:alpine
+    container_name: translation-web-interface
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - lara-server
+    restart: unless-stopped
+    networks:
+      - lexamt-network
+
+networks:
+  lexamt-network:
+    external: true

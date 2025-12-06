@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Domaines et proximités
+    Généré le: 2025-11-23T13:59:02.974Z
+    Ce fichier liste pour chaque domaine les domaines proches
+-->
+<domaines generated="2025-11-23T13:59:02.974Z">
+  <domaine name="Accounting">
+    <proche>Banking</proche>
+    <proche>Investment</proche>
+    <proche>Insurance</proche>
+  </domaine>
+  <domaine name="Banking">
+    <proche>Accounting</proche>
+    <proche>Investment</proche>
+    <proche>Insurance</proche>
+  </domaine>
+  <domaine name="Investment">
+    <proche>Accounting</proche>
+    <proche>Banking</proche>
+    <proche>Insurance</proche>
+  </domaine>
+  <domaine name="Insurance">
+    <proche>Accounting</proche>
+    <proche>Banking</proche>
+    <proche>Investment</proche>
+  </domaine>
+  <domaine name="Arbitration">
+    <proche>Crimes-proceedings</proche>
+    <proche>Corporate</proche>
+  </domaine>
+  <domaine name="Real Estate">
+    <proche>Town planning</proche>
+    <proche>Contracts</proche>
+  </domaine>
+  <domaine name="Contracts">
+    <proche>Competition</proche>
+    <proche>Corporate</proche>
+  </domaine>
+  <domaine name="Competition">
+    <proche>Contracts</proche>
+    <proche>Corporate</proche>
+  </domaine>
+  <domaine name="Corporate">
+    <proche>Contracts</proche>
+    <proche>Competition</proche>
+  </domaine>
+  <domaine name="Tax">
+    <proche>Customs</proche>
+  </domaine>
+  <domaine name="Customs">
+    <proche>Tax</proche>
+  </domaine>
+  <domaine name="Patents">
+    <proche>Industrial designs</proche>
+    <proche>GDPR</proche>
+  </domaine>
+  <domaine name="Industrial designs">
+    <proche>Patents</proche>
+    <proche>GDPR</proche>
+  </domaine>
+  <domaine name="GDPR">
+    <proche>Patents</proche>
+    <proche>Industrial designs</proche>
+  </domaine>
+  <domaine name="Labour law">
+    <proche>HR</proche>
+    <proche>Social benefits</proche>
+    <proche>Social security</proche>
+  </domaine>
+  <domaine name="HR">
+    <proche>Labour law</proche>
+    <proche>Social benefits</proche>
+    <proche>Social security</proche>
+  </domaine>
+  <domaine name="Social benefits">
+    <proche>Labour law</proche>
+    <proche>HR</proche>
+    <proche>Social security</proche>
+  </domaine>
+  <domaine name="Social security">
+    <proche>Labour law</proche>
+    <proche>HR</proche>
+    <proche>Social benefits</proche>
+  </domaine>
+  <domaine name="Crimes-proceedings">
+    <proche>Criminal finance</proche>
+  </domaine>
+  <domaine name="Criminal finance">
+    <proche>Crimes-proceedings</proche>
+  </domaine>
+  <domaine name="Climate">
+    <proche>Town planning</proche>
+  </domaine>
+  <domaine name="Town planning">
+    <proche>Climate</proche>
+  </domaine>
+  <domaine name="Maritime law">
+  </domaine>
+  <domaine name="Transport">
+  </domaine>
+</domaines>

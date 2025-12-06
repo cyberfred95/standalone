@@ -1,0 +1,34 @@
+Screen_Recording_20250619_082934_Chrome.mp4
+
+# Dependencies
+node_modules/
+server/node_modules/
+
+# Environment variables
+.env
+server/.env
+
+# Uploads temporaires
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+glossaires/.env
+glossaires/laratranslation/
+glossaires/glossaries_to_load_tous.csv
+glossaires/glossaries_to_load_tous.zip
+.claude/settings.local.json
+nul
+.claude/settings.local.json

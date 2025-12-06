@@ -1,0 +1,144 @@
+/* ===========================================
+   BASE STYLES
+   Reset, body, container, typography
+   =========================================== */
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 16px;
+    background-color: #f8f9fa;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.logo img {
+    height: 40px;
+    width: auto;
+}
+
+.subtitle {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.title-blue {
+    color: #333366;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.title-green {
+    color: #059669;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none;
+}
+
+.help-text {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+/* Messages */
+.error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 16px;
+    font-size: 14px;
+}
+
+.success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #16a34a;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 16px;
+    font-size: 14px;
+}
+
+/* Sections */
+.api-key-section,
+.test-section {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 24px;
+}
+
+/* Loading */
+.loading {
+    display: none;
+    text-align: center;
+    margin-top: 16px;
+    color: #6b7280;
+}
+
+.spinner {
+    border: 2px solid #f3f4f6;
+    border-top: 2px solid #2563eb;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Settings Button */
+.settings-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s;
+    z-index: 999;
+}
+
+.settings-btn:hover {
+    background: #4b5563;
+    transform: scale(1.05);
+}
