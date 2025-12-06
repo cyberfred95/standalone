@@ -241,13 +241,7 @@ function setupBurgerMenuHandlers() {
     const burgerBtn = document.getElementById('burgerBtn');
     const burgerDropdown = document.getElementById('burgerDropdown');
     const setupMenuItem = document.getElementById('setupMenuItem');
-    const templatesMenuItem = document.getElementById('templatesMenuItem');
-    const domainsMenuItem = document.getElementById('domainsMenuItem');
-    const glossariesMenuItem = document.getElementById('glossariesMenuItem');
-    const memoriesMenuItem = document.getElementById('memoriesMenuItem');
-    const resourcesMenuItem = document.getElementById('resourcesMenuItem');
     const docApiMenuItem = document.getElementById('docApiMenuItem');
-    const backFromTemplates = document.getElementById('backFromTemplates');
 
     if (!burgerBtn || !burgerDropdown) {
         console.error('Burger menu elements not found');
@@ -259,7 +253,6 @@ function setupBurgerMenuHandlers() {
         e.preventDefault();
         e.stopPropagation();
 
-        // Toggle la classe pour montrer/cacher
         if (burgerDropdown.classList.contains('show')) {
             burgerDropdown.classList.remove('show');
         } else {
@@ -282,57 +275,12 @@ function setupBurgerMenuHandlers() {
         });
     }
 
-    // Menu item : Templates
-    if (templatesMenuItem) {
-        templatesMenuItem.addEventListener('click', () => {
-            burgerDropdown.classList.remove('show');
-            openTemplatesScreen();
-        });
-    }
-
-    // Menu item : Domaines
-    if (domainsMenuItem) {
-        domainsMenuItem.addEventListener('click', () => {
-            burgerDropdown.classList.remove('show');
-            openDomainsScreen();
-        });
-    }
-
-    // Menu item : Glossaires
-    if (glossariesMenuItem) {
-        glossariesMenuItem.addEventListener('click', () => {
-            burgerDropdown.classList.remove('show');
-            openGlossariesScreen();
-        });
-    }
-
-    // Menu item : Mémoires
-    if (memoriesMenuItem) {
-        memoriesMenuItem.addEventListener('click', () => {
-            burgerDropdown.classList.remove('show');
-            openMemoriesScreen();
-        });
-    }
-
-    // Menu item : Ressources
-    if (resourcesMenuItem) {
-        resourcesMenuItem.addEventListener('click', () => {
-            burgerDropdown.classList.remove('show');
-            openResourcesScreen();
-        });
-    }
-
     // Menu item : Doc API
     if (docApiMenuItem) {
         docApiMenuItem.addEventListener('click', () => {
             burgerDropdown.classList.remove('show');
             openApiDocumentation();
         });
-    }
-
-    // Bouton retour depuis la page templates
-    if (backFromTemplates) {
-        backFromTemplates.addEventListener('click', closeTemplatesScreen);
     }
 }
 

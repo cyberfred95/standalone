@@ -294,10 +294,6 @@ const LARA_DOCUMENT_STATUS_POLL_INTERVAL = 4000;
 const LARA_DOCUMENT_STATUS_FINAL = new Set(['translated', 'error']);
 
 function startLaraDocumentStatusPolling(results, files) {
-    console.log('🔄 [POLLING] Démarrage du polling pour', results.length, 'résultat(s)');
-    console.log('🔄 [POLLING] Config baseUrl:', config.lara.baseUrl);
-    console.log('🔄 [POLLING] Résultats reçus:', JSON.stringify(results, null, 2));
-
     if (!config.lara.accessKeyId || !config.lara.accessKeySecret) {
         console.warn('Polling Lara des documents désactivé : clés Lara manquantes');
         return;
@@ -305,12 +301,9 @@ function startLaraDocumentStatusPolling(results, files) {
 
     results.forEach((result, index) => {
         const status = (result.status || '').toLowerCase();
-        console.log(`🔄 [POLLING] Document ${index}: id=${result.id}, status=${status}`);
         if (!result.id || LARA_DOCUMENT_STATUS_FINAL.has(status)) {
-            console.log(`🔄 [POLLING] Document ${index} ignoré (pas d'id ou statut final)`);
             return;
         }
-        console.log(`🔄 [POLLING] Lancement du polling pour document ${result.id}`);
         pollLaraDocumentStatus(result.id, index, results, files);
     });
 }
@@ -318,17 +311,12 @@ function startLaraDocumentStatusPolling(results, files) {
 function pollLaraDocumentStatus(documentId, resultIndex, results, files) {
     const poll = async () => {
         try {
-            const statusUrl = buildLaraDocumentStatusUrl(documentId);
-            console.log(`🔄 [POLLING] Requête vers: ${statusUrl}`);
-            const response = await fetch(statusUrl);
-            console.log(`🔄 [POLLING] Réponse HTTP: ${response.status} ${response.statusText}`);
+            const response = await fetch(buildLaraDocumentStatusUrl(documentId));
             if (!response.ok) {
-                console.warn(`Polling Lara document ${documentId} échoué (${response.status}). nouvelle tentative dans ${LARA_DOCUMENT_STATUS_POLL_INTERVAL}ms.`);
                 setTimeout(poll, LARA_DOCUMENT_STATUS_POLL_INTERVAL);
                 return;
             }
             const statusData = await response.json();
-            console.log(`🔄 [POLLING] Données reçues:`, statusData);
             const updatedResult = results[resultIndex];
             if (!updatedResult) {
                 return;
@@ -365,7 +353,6 @@ function buildLaraDocumentStatusUrl(documentId) {
     const url = new URL(`${baseUrl}/document-status/${documentId}`);
     url.searchParams.set('accessKeyId', config.lara.accessKeyId);
     url.searchParams.set('accessKeySecret', config.lara.accessKeySecret);
-    console.log('🔍 [POLLING] URL de statut construite:', url.toString());
     return url.toString();
 }
 
