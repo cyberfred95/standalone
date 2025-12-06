@@ -1,0 +1,1016 @@
+openapi: 3.0.3
+info:
+  title: Lara Translation Server API
+  description: |
+    API de traduction utilisant le service LaraTranslate (Translated.com).
+
+    Ce serveur agit comme un proxy/middleware entre votre application frontend et l'API LaraTranslate,
+    en ajoutant des fonctionnalités supplémentaires comme la gestion des templates de traduction.
+
+    ## Authentification
+
+    Toutes les routes Lara nécessitent les credentials LaraTranslate :
+    - `accessKeyId` : Votre Access Key ID LaraTranslate
+    - `accessKeySecret` : Votre Access Key Secret LaraTranslate
+
+    Ces credentials sont passés soit dans le body (POST) soit dans les query parameters (GET).
+
+    ## Codes de langue
+
+    Les codes de langue courts (ex: `fr`, `en`) sont automatiquement convertis en codes avec locale :
+    - `fr` -> `fr-FR`
+    - `en` -> `en-US`
+    - `es` -> `es-ES`
+    - `de` -> `de-DE`
+    - `it` -> `it-IT`
+    - etc.
+
+  version: 1.0.0
+  contact:
+    name: Support Lexamt
+    email: support@lexamt.com
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:3000
+    description: Serveur de développement local
+
+tags:
+  - name: Health
+    description: Vérification de l'état du serveur
+  - name: Translation
+    description: Endpoints de traduction de texte et documents
+  - name: Documents
+    description: Gestion des documents traduits
+  - name: Resources
+    description: Mémoires de traduction et glossaires
+  - name: Templates
+    description: Gestion des templates de traduction
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Vérification de l'état du serveur
+      description: Permet de vérifier que le serveur est opérationnel
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Serveur opérationnel
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  service:
+                    type: string
+                    example: lara-translation-server
+
+  /api/lara/translate-text:
+    post:
+      tags:
+        - Translation
+      summary: Traduire un texte
+      description: |
+        Traduit un texte source vers une langue cible en utilisant LaraTranslate.
+
+        ## Options avancées
+
+        - **style** : Style de traduction (`faithful`, `fluid`, `creative`)
+        - **instructions** : Instructions personnalisées pour affiner la traduction
+        - **adaptTo** : IDs de mémoires de traduction à utiliser (séparés par des virgules)
+        - **glossaries** : IDs de glossaires à appliquer (séparés par des virgules)
+        - **domain** : Domaine métier pour contextualiser la traduction
+
+        ## Module Qualité
+
+        Le module qualité Lara est activé automatiquement et peut retourner un feedback
+        sur la qualité de la traduction dans le champ `quality_feedback`.
+
+      operationId: translateText
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TranslateTextRequest'
+            examples:
+              simple:
+                summary: Traduction simple
+                value:
+                  accessKeyId: "votre_access_key_id"
+                  accessKeySecret: "votre_access_key_secret"
+                  text: "Bonjour, comment allez-vous ?"
+                  source: "fr"
+                  target: "en"
+              advanced:
+                summary: Traduction avec options
+                value:
+                  accessKeyId: "votre_access_key_id"
+                  accessKeySecret: "votre_access_key_secret"
+                  text: "Le contrat de bail est signé par les deux parties."
+                  source: "fr"
+                  target: "en"
+                  domain: "Legal"
+                  style: "faithful"
+                  instructions: "Utilisez un ton formel et juridique"
+                  adaptTo: "123,456"
+                  glossaries: "789"
+      responses:
+        '200':
+          description: Traduction réussie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslateTextResponse'
+              example:
+                translation: "Hello, how are you?"
+                sourceLanguage: "fr-FR"
+                targetLanguage: "en"
+                contentType: "text/plain"
+                quality_feedback:
+                  score: 95
+                  comments: "Traduction de haute qualité"
+        '400':
+          description: Paramètres manquants ou invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "text et target sont requis"
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/lara/translate-document:
+    post:
+      tags:
+        - Translation
+      summary: Traduire un document
+      description: |
+        Upload et traduit un document complet.
+
+        ## Formats supportés
+
+        - PDF (.pdf)
+        - Microsoft Word (.docx, .doc)
+        - OpenDocument (.odt)
+        - Texte brut (.txt)
+        - Rich Text Format (.rtf)
+
+        ## Processus
+
+        1. Le document est uploadé sur le serveur
+        2. Le serveur lance la traduction via LaraTranslate
+        3. Le serveur attend la fin de la traduction (polling automatique, max 5 minutes)
+        4. Le fichier traduit est disponible via une URL de téléchargement
+
+        ## Taille maximale
+
+        50 MB par fichier
+
+      operationId: translateDocument
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TranslateDocumentRequest'
+      responses:
+        '200':
+          description: Document traduit avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslateDocumentResponse'
+              examples:
+                success:
+                  summary: Traduction réussie
+                  value:
+                    id: "doc_123456"
+                    status: "translated"
+                    filename: "contrat.docx"
+                    source_language: "fr"
+                    target_language: "en"
+                    created_at: "2024-01-15T10:30:00Z"
+                    updated_at: "2024-01-15T10:32:00Z"
+                    translated_file: "/api/lara/download-file/translated_contrat.docx"
+                    message: "Traduction terminée avec succès"
+                pending:
+                  summary: Traduction en cours
+                  value:
+                    id: "doc_123456"
+                    status: "processing"
+                    filename: "rapport.pdf"
+                    source_language: "fr"
+                    target_language: "de"
+                    warning: "La traduction prend plus de temps que prévu. Vérifiez le statut plus tard."
+        '400':
+          description: Paramètres manquants
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/lara/download-file/{filename}:
+    get:
+      tags:
+        - Documents
+      summary: Télécharger un fichier traduit
+      description: |
+        Télécharge un fichier traduit depuis le serveur.
+
+        Cette URL est retournée dans le champ `translated_file` de la réponse
+        de `/api/lara/translate-document`.
+
+      operationId: downloadFile
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          description: Nom du fichier à télécharger (encodé URL si contient des espaces)
+          schema:
+            type: string
+          example: "translated_contrat.docx"
+      responses:
+        '200':
+          description: Fichier téléchargé
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Fichier non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Fichier non trouvé"
+
+  /api/lara/document-status/{documentId}:
+    get:
+      tags:
+        - Documents
+      summary: Vérifier le statut d'un document
+      description: |
+        Permet de vérifier le statut de traduction d'un document.
+
+        ## Statuts possibles
+
+        - `initialized` : Document reçu, traduction non démarrée
+        - `processing` : Traduction en cours
+        - `translated` : Traduction terminée
+        - `error` : Erreur lors de la traduction
+
+      operationId: getDocumentStatus
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          description: ID du document retourné lors de l'upload
+          schema:
+            type: string
+          example: "doc_123456"
+        - name: accessKeyId
+          in: query
+          required: true
+          description: Access Key ID LaraTranslate
+          schema:
+            type: string
+        - name: accessKeySecret
+          in: query
+          required: true
+          description: Access Key Secret LaraTranslate
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Statut du document
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  status:
+                    type: string
+                    enum: [initialized, processing, translated, error]
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+        '400':
+          description: Credentials manquants
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/lara/download/{documentId}:
+    get:
+      tags:
+        - Documents
+      summary: Télécharger un document traduit par ID
+      description: |
+        Télécharge directement un document traduit depuis LaraTranslate via son ID.
+
+        Alternative à `/api/lara/download-file/{filename}` pour les cas où
+        le fichier n'a pas été sauvegardé localement.
+
+      operationId: downloadDocument
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          description: ID du document
+          schema:
+            type: string
+        - name: accessKeyId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: accessKeySecret
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: outputFormat
+          in: query
+          required: false
+          description: Format de sortie souhaité (optionnel)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Document téléchargé
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Credentials manquants
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/lara/memories:
+    get:
+      tags:
+        - Resources
+      summary: Lister les mémoires de traduction
+      description: |
+        Récupère la liste des mémoires de traduction disponibles sur le compte LaraTranslate.
+
+        Les mémoires de traduction permettent d'améliorer la cohérence des traductions
+        en réutilisant des segments déjà traduits.
+
+      operationId: listMemories
+      parameters:
+        - name: accessKeyId
+          in: query
+          required: true
+          description: Access Key ID LaraTranslate
+          schema:
+            type: string
+        - name: accessKeySecret
+          in: query
+          required: true
+          description: Access Key Secret LaraTranslate
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Liste des mémoires de traduction
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ID de la mémoire
+                    name:
+                      type: string
+                      description: Nom de la mémoire
+                    sourceLanguage:
+                      type: string
+                    targetLanguage:
+                      type: string
+              example:
+                - id: "mem_123"
+                  name: "Mémoire Juridique FR-EN"
+                  sourceLanguage: "fr-FR"
+                  targetLanguage: "en-US"
+                - id: "mem_456"
+                  name: "Mémoire Technique"
+                  sourceLanguage: "fr-FR"
+                  targetLanguage: "de-DE"
+        '400':
+          description: Credentials manquants
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/lara/glossaries:
+    get:
+      tags:
+        - Resources
+      summary: Lister les glossaires
+      description: |
+        Récupère la liste des glossaires disponibles sur le compte LaraTranslate.
+
+        Les glossaires permettent de garantir la traduction cohérente de termes spécifiques.
+
+      operationId: listGlossaries
+      parameters:
+        - name: accessKeyId
+          in: query
+          required: true
+          description: Access Key ID LaraTranslate
+          schema:
+            type: string
+        - name: accessKeySecret
+          in: query
+          required: true
+          description: Access Key Secret LaraTranslate
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Liste des glossaires
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    sourceLanguage:
+                      type: string
+                    targetLanguage:
+                      type: string
+              example:
+                - id: "glos_789"
+                  name: "Glossaire Juridique"
+                  sourceLanguage: "fr-FR"
+                  targetLanguage: "en-US"
+        '400':
+          description: Credentials manquants
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/templates:
+    get:
+      tags:
+        - Templates
+      summary: Lister tous les templates
+      description: |
+        Récupère tous les templates de traduction configurés.
+
+        Les templates définissent des configurations prédéfinies associant :
+        - Un domaine métier
+        - Des langues source et cible
+        - Une mémoire de traduction
+        - Un glossaire
+
+        Cela permet aux utilisateurs de sélectionner rapidement une configuration
+        adaptée à leur contexte de traduction.
+
+      operationId: listTemplates
+      responses:
+        '200':
+          description: Liste des templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Template'
+              example:
+                - id: "legal-fr-en"
+                  name: "Juridique FR vers EN"
+                  isDefault: false
+                  domain: "Legal"
+                  sourceLanguage: "fr"
+                  targetLanguage: "en"
+                  translationMemoryId: "mem_123"
+                  translationMemoryName: "Mémoire Juridique"
+                  glossaryId: "glos_456"
+                  glossaryName: "Glossaire Juridique"
+                  description: "Template pour les documents juridiques"
+                - id: "default"
+                  name: "Template par défaut"
+                  isDefault: true
+                  domain: "*"
+                  sourceLanguage: "*"
+                  targetLanguage: "*"
+                  translationMemoryId: ""
+                  translationMemoryName: ""
+                  glossaryId: ""
+                  glossaryName: ""
+                  description: "Template utilisé quand aucun autre ne correspond"
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags:
+        - Templates
+      summary: Créer un nouveau template
+      description: |
+        Crée un nouveau template de traduction.
+
+        Le template sera sauvegardé dans le fichier `templates.xml`.
+
+      operationId: createTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTemplateRequest'
+            example:
+              id: "accounting-fr-de"
+              name: "Comptabilité FR vers DE"
+              domain: "Accounting"
+              sourceLanguage: "fr"
+              targetLanguage: "de"
+              translationMemory: "mem_789"
+              glossary: "glos_101"
+              description: "Template pour les documents comptables"
+      responses:
+        '200':
+          description: Template créé avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  template:
+                    type: object
+              example:
+                message: "Template créé avec succès"
+                template:
+                  id: "accounting-fr-de"
+                  name: "Comptabilité FR vers DE"
+        '400':
+          description: Paramètres manquants ou ID déjà existant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missing:
+                  value:
+                    error: "id, name, domain et targetLanguage sont requis"
+                duplicate:
+                  value:
+                    error: "Un template avec cet ID existe déjà"
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/templates/find:
+    get:
+      tags:
+        - Templates
+      summary: Rechercher des templates
+      description: |
+        Recherche les templates correspondant aux critères spécifiés.
+
+        ## Logique de recherche
+
+        1. Les templates sont filtrés par domaine, langue source et langue cible
+        2. Les templates avec `*` (wildcard) correspondent à toutes les valeurs
+        3. Les résultats sont triés par nombre de correspondances exactes
+        4. Le template par défaut (`isDefault: true`) n'apparaît que si aucun autre template ne correspond
+
+        ## Exemple d'utilisation
+
+        Pour trouver le template adapté à une traduction juridique FR -> EN :
+        ```
+        GET /api/templates/find?domain=Legal&sourceLanguage=fr&targetLanguage=en
+        ```
+
+      operationId: findTemplates
+      parameters:
+        - name: domain
+          in: query
+          required: false
+          description: Nom du domaine (ex: Legal, Accounting, Technical)
+          schema:
+            type: string
+          example: "Legal"
+        - name: sourceLanguage
+          in: query
+          required: false
+          description: Code de la langue source (ex: fr, en, de)
+          schema:
+            type: string
+          example: "fr"
+        - name: targetLanguage
+          in: query
+          required: true
+          description: Code de la langue cible (obligatoire)
+          schema:
+            type: string
+          example: "en"
+      responses:
+        '200':
+          description: Templates correspondants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Template'
+        '400':
+          description: Paramètre targetLanguage manquant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "targetLanguage est requis"
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/templates/{id}:
+    put:
+      tags:
+        - Templates
+      summary: Mettre à jour un template
+      description: |
+        Met à jour un template existant.
+
+        Seuls les champs fournis dans le body seront mis à jour.
+        Les autres champs conserveront leur valeur actuelle.
+
+      operationId: updateTemplate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID du template à modifier
+          schema:
+            type: string
+          example: "legal-fr-en"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTemplateRequest'
+            example:
+              name: "Juridique FR vers EN (v2)"
+              translationMemory: "mem_999"
+              description: "Template mis à jour"
+      responses:
+        '200':
+          description: Template mis à jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  template:
+                    type: object
+        '404':
+          description: Template non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Template non trouvé"
+        '500':
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    TranslateTextRequest:
+      type: object
+      required:
+        - accessKeyId
+        - accessKeySecret
+        - text
+        - target
+      properties:
+        accessKeyId:
+          type: string
+          description: Access Key ID LaraTranslate
+          example: "ak_xxxxxxxx"
+        accessKeySecret:
+          type: string
+          description: Access Key Secret LaraTranslate
+          example: "sk_xxxxxxxx"
+        text:
+          type: string
+          description: Texte à traduire
+          example: "Bonjour, comment allez-vous ?"
+        source:
+          type: string
+          description: Code de la langue source (optionnel, détection automatique si non fourni)
+          example: "fr"
+        target:
+          type: string
+          description: Code de la langue cible
+          example: "en"
+        domain:
+          type: string
+          description: Domaine métier pour contextualiser la traduction
+          example: "Legal"
+        style:
+          type: string
+          description: Style de traduction
+          enum: [faithful, fluid, creative]
+          example: "faithful"
+        instructions:
+          type: string
+          description: Instructions personnalisées pour la traduction
+          example: "Utilisez un ton formel"
+        adaptTo:
+          type: string
+          description: IDs de mémoires de traduction (séparés par des virgules)
+          example: "123,456"
+        glossaries:
+          type: string
+          description: IDs de glossaires (séparés par des virgules)
+          example: "789"
+
+    TranslateTextResponse:
+      type: object
+      properties:
+        translation:
+          type: string
+          description: Texte traduit
+        sourceLanguage:
+          type: string
+          description: Langue source détectée ou fournie
+        targetLanguage:
+          type: string
+          description: Langue cible
+        contentType:
+          type: string
+          description: Type de contenu
+        metadata:
+          type: object
+          description: Métadonnées supplémentaires (mode verbose)
+        quality_feedback:
+          type: object
+          description: Feedback du module qualité Lara
+          properties:
+            score:
+              type: number
+            comments:
+              type: string
+            suggestions:
+              type: string
+
+    TranslateDocumentRequest:
+      type: object
+      required:
+        - accessKeyId
+        - accessKeySecret
+        - file
+        - target
+      properties:
+        accessKeyId:
+          type: string
+          description: Access Key ID LaraTranslate
+        accessKeySecret:
+          type: string
+          description: Access Key Secret LaraTranslate
+        file:
+          type: string
+          format: binary
+          description: Fichier à traduire (max 50MB)
+        source:
+          type: string
+          description: Code de la langue source
+        target:
+          type: string
+          description: Code de la langue cible
+        domain:
+          type: string
+          description: Domaine métier
+        style:
+          type: string
+          enum: [faithful, fluid, creative]
+        adaptTo:
+          type: string
+          description: IDs de mémoires de traduction
+        glossaries:
+          type: string
+          description: IDs de glossaires
+        outputFormat:
+          type: string
+          description: Format de sortie souhaité
+
+    TranslateDocumentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID du document
+        status:
+          type: string
+          enum: [initialized, processing, translated, error]
+          description: Statut de la traduction
+        filename:
+          type: string
+          description: Nom du fichier original
+        source_language:
+          type: string
+        target_language:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        translated_file:
+          type: string
+          description: URL de téléchargement du fichier traduit
+        message:
+          type: string
+          description: Message de succès
+        warning:
+          type: string
+          description: Avertissement (si traduction en cours)
+        error:
+          type: string
+          description: Message d'erreur (si échec)
+
+    Template:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifiant unique du template
+        name:
+          type: string
+          description: Nom affiché du template
+        isDefault:
+          type: boolean
+          description: Indique si c'est le template par défaut
+        domain:
+          type: string
+          description: Domaine métier (* pour tous)
+        sourceLanguage:
+          type: string
+          description: Langue source (* pour toutes)
+        targetLanguage:
+          type: string
+          description: Langue cible (* pour toutes)
+        translationMemoryId:
+          type: string
+          description: ID de la mémoire de traduction associée
+        translationMemoryName:
+          type: string
+          description: Nom de la mémoire de traduction
+        glossaryId:
+          type: string
+          description: ID du glossaire associé
+        glossaryName:
+          type: string
+          description: Nom du glossaire
+        description:
+          type: string
+          description: Description du template
+
+    CreateTemplateRequest:
+      type: object
+      required:
+        - id
+        - name
+        - domain
+        - targetLanguage
+      properties:
+        id:
+          type: string
+          description: Identifiant unique (doit être unique)
+        name:
+          type: string
+          description: Nom du template
+        domain:
+          type: string
+          description: Domaine métier
+        sourceLanguage:
+          type: string
+          description: Langue source (défaut *)
+        targetLanguage:
+          type: string
+          description: Langue cible
+        translationMemory:
+          type: string
+          description: ID de la mémoire de traduction
+        glossary:
+          type: string
+          description: ID du glossaire
+        description:
+          type: string
+          description: Description
+
+    UpdateTemplateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        domain:
+          type: string
+        sourceLanguage:
+          type: string
+        targetLanguage:
+          type: string
+        translationMemory:
+          type: string
+        glossary:
+          type: string
+        description:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Message d'erreur
+        details:
+          type: string
+          description: Détails techniques de l'erreur
