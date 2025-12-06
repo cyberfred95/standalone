@@ -23,7 +23,7 @@ let config = {
     translationService: 'lexa', // 'lexa' ou 'lara'
     lexa: {
         apiKey: '',
-        baseUrl: 'https://test.portail.lexamt.fr/api/v1'
+        baseUrl: 'https://api.portail.lexamt.fr/api/v1'
     },
     lara: {
         accessKeyId: '',
