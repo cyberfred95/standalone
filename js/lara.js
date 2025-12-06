@@ -279,7 +279,8 @@ async function translateFilesLara(files, sourceLang, targetLang) {
         }
 
         console.log('📤 [DEBUG] Appel de displayFileResults avec results:', results);
-        displayFileResults(results, files);
+            displayFileResults(results, files);
+            startLaraDocumentStatusPolling(results, files);
         showMessage(`Traduction de ${files.length} fichier(s) avec LaraTranslate lancée !`, 'success');
     } catch (error) {
         console.error('Erreur lors de la traduction Lara:', error);
@@ -287,6 +288,96 @@ async function translateFilesLara(files, sourceLang, targetLang) {
     } finally {
         setLoading(false);
     }
+}
+
+const LARA_DOCUMENT_STATUS_POLL_INTERVAL = 4000;
+const LARA_DOCUMENT_STATUS_FINAL = new Set(['translated', 'error']);
+
+function startLaraDocumentStatusPolling(results, files) {
+    console.log('🔄 [POLLING] Démarrage du polling pour', results.length, 'résultat(s)');
+    console.log('🔄 [POLLING] Config baseUrl:', config.lara.baseUrl);
+    console.log('🔄 [POLLING] Résultats reçus:', JSON.stringify(results, null, 2));
+
+    if (!config.lara.accessKeyId || !config.lara.accessKeySecret) {
+        console.warn('Polling Lara des documents désactivé : clés Lara manquantes');
+        return;
+    }
+
+    results.forEach((result, index) => {
+        const status = (result.status || '').toLowerCase();
+        console.log(`🔄 [POLLING] Document ${index}: id=${result.id}, status=${status}`);
+        if (!result.id || LARA_DOCUMENT_STATUS_FINAL.has(status)) {
+            console.log(`🔄 [POLLING] Document ${index} ignoré (pas d'id ou statut final)`);
+            return;
+        }
+        console.log(`🔄 [POLLING] Lancement du polling pour document ${result.id}`);
+        pollLaraDocumentStatus(result.id, index, results, files);
+    });
+}
+
+function pollLaraDocumentStatus(documentId, resultIndex, results, files) {
+    const poll = async () => {
+        try {
+            const statusUrl = buildLaraDocumentStatusUrl(documentId);
+            console.log(`🔄 [POLLING] Requête vers: ${statusUrl}`);
+            const response = await fetch(statusUrl);
+            console.log(`🔄 [POLLING] Réponse HTTP: ${response.status} ${response.statusText}`);
+            if (!response.ok) {
+                console.warn(`Polling Lara document ${documentId} échoué (${response.status}). nouvelle tentative dans ${LARA_DOCUMENT_STATUS_POLL_INTERVAL}ms.`);
+                setTimeout(poll, LARA_DOCUMENT_STATUS_POLL_INTERVAL);
+                return;
+            }
+            const statusData = await response.json();
+            console.log(`🔄 [POLLING] Données reçues:`, statusData);
+            const updatedResult = results[resultIndex];
+            if (!updatedResult) {
+                return;
+            }
+
+            const newStatus = (statusData.status || updatedResult.status || '').toLowerCase();
+            updatedResult.status = newStatus || updatedResult.status;
+            if (statusData.createdAt) updatedResult.created_at = statusData.createdAt;
+            if (statusData.updatedAt) updatedResult.updated_at = statusData.updatedAt;
+            if (statusData.created_at) updatedResult.created_at = statusData.created_at;
+            if (statusData.updated_at) updatedResult.updated_at = statusData.updated_at;
+            if (newStatus === 'translated') {
+                updatedResult.downloadUrl = updatedResult.downloadUrl || buildLaraDocumentDownloadUrl(documentId);
+            }
+
+            displayFileResults(results, files);
+
+            if (!LARA_DOCUMENT_STATUS_FINAL.has(newStatus)) {
+                setTimeout(poll, LARA_DOCUMENT_STATUS_POLL_INTERVAL);
+            }
+        } catch (error) {
+            console.error('Erreur lors du polling du statut Lara:', error);
+            setTimeout(poll, LARA_DOCUMENT_STATUS_POLL_INTERVAL);
+        }
+    };
+    poll();
+}
+
+function buildLaraDocumentStatusUrl(documentId) {
+    let baseUrl = config.lara.baseUrl.replace(/\/$/, '');
+    if (!baseUrl.startsWith('http')) {
+        baseUrl = `${window.location.origin}${baseUrl}`;
+    }
+    const url = new URL(`${baseUrl}/document-status/${documentId}`);
+    url.searchParams.set('accessKeyId', config.lara.accessKeyId);
+    url.searchParams.set('accessKeySecret', config.lara.accessKeySecret);
+    console.log('🔍 [POLLING] URL de statut construite:', url.toString());
+    return url.toString();
+}
+
+function buildLaraDocumentDownloadUrl(documentId) {
+    let baseUrl = config.lara.baseUrl.replace(/\/$/, '');
+    if (!baseUrl.startsWith('http')) {
+        baseUrl = `${window.location.origin}${baseUrl}`;
+    }
+    const url = new URL(`${baseUrl}/download/${documentId}`);
+    url.searchParams.set('accessKeyId', config.lara.accessKeyId);
+    url.searchParams.set('accessKeySecret', config.lara.accessKeySecret);
+    return url.toString();
 }
 // js/lara.js : toutes les fonctions liées à Lara (langues, templates, traduction)
 
