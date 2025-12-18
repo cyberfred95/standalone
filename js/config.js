@@ -96,6 +96,16 @@ function loadConfigFromStorage() {
             }
         }
 
+        // Charger les URLs des serveurs
+        const lexaBaseUrlInput = document.getElementById('lexaBaseUrl');
+        if (lexaBaseUrlInput) {
+            lexaBaseUrlInput.value = config.lexa.baseUrl;
+        }
+        const laraBaseUrlInput = document.getElementById('laraBaseUrl');
+        if (laraBaseUrlInput) {
+            laraBaseUrlInput.value = config.lara.baseUrl;
+        }
+
         // Toujours vérifier que le baseUrl est correct
         console.log('✅ Backend URL configurée:', config.lara.baseUrl);
 
@@ -183,6 +193,7 @@ async function saveSettings() {
     try {
         if (service === 'lexa') {
             const apiKey = document.getElementById('lexaApiKey').value.trim();
+            const lexaBaseUrl = document.getElementById('lexaBaseUrl').value.trim() || config.lexa.baseUrl;
 
             if (!apiKey) {
                 showSettingsMessage('Veuillez entrer une clé API Lexa.', 'error');
@@ -191,7 +202,7 @@ async function saveSettings() {
 
             // Tester la clé Lexa en récupérant les langues
             showSettingsMessage('Test de la clé API Lexa en cours...', 'success');
-            const isValid = await testLexaApiKey(apiKey);
+            const isValid = await testLexaApiKey(apiKey, lexaBaseUrl);
 
             if (!isValid) {
                 showSettingsMessage('Clé API Lexa invalide. Vérifiez votre clé.', 'error');
@@ -199,12 +210,18 @@ async function saveSettings() {
             }
 
             config.lexa.apiKey = apiKey;
+            // Sauvegarder l'URL du serveur Lexa
+            if (lexaBaseUrl) {
+                config.lexa.baseUrl = lexaBaseUrl;
+            }
             config.translationService = service;
 
         } else {
             const accessKeyId = document.getElementById('laraAccessKeyId').value.trim();
             const accessKeySecret = document.getElementById('laraAccessKeySecret').value.trim();
             const lexaApiKey = document.getElementById('lexaApiKey').value.trim();
+            const lexaBaseUrl = document.getElementById('lexaBaseUrl').value.trim() || config.lexa.baseUrl;
+            const laraBaseUrl = document.getElementById('laraBaseUrl').value.trim() || config.lara.baseUrl;
 
             if (!accessKeyId || !accessKeySecret) {
                 showSettingsMessage('Veuillez entrer les clés API Lara (ID et Secret).', 'error');
@@ -218,7 +235,7 @@ async function saveSettings() {
 
             // Tester la clé Lexa d'abord
             showSettingsMessage('Test de la clé API Lexa en cours...', 'success');
-            const lexaValid = await testLexaApiKey(lexaApiKey);
+            const lexaValid = await testLexaApiKey(lexaApiKey, lexaBaseUrl);
 
             if (!lexaValid) {
                 showSettingsMessage('Clé API Lexa invalide. Elle est nécessaire pour récupérer les langues.', 'error');
@@ -227,7 +244,7 @@ async function saveSettings() {
 
             // Tester les clés Lara
             showSettingsMessage('Test des clés API Lara en cours...', 'success');
-            const laraValid = await testLaraApiKeys(accessKeyId, accessKeySecret);
+            const laraValid = await testLaraApiKeys(accessKeyId, accessKeySecret, laraBaseUrl);
 
             if (!laraValid) {
                 showSettingsMessage('Clés API Lara invalides. Vérifiez votre Access Key ID et Secret.', 'error');
@@ -248,6 +265,15 @@ async function saveSettings() {
 
             config.lara.translationMemoryIds = document.getElementById('laraMemoryIds').value.trim();
             config.lara.glossaryIds = document.getElementById('laraGlossaryIds').value.trim();
+
+            // Sauvegarder les URLs des serveurs
+            if (lexaBaseUrl) {
+                config.lexa.baseUrl = lexaBaseUrl;
+            }
+            if (laraBaseUrl) {
+                config.lara.baseUrl = laraBaseUrl;
+            }
+
             config.translationService = service;
         }
 
@@ -286,9 +312,11 @@ function showSettingsMessage(text, type) {
 }
 
 // Test de la clé API Lexa
-async function testLexaApiKey(apiKey) {
+async function testLexaApiKey(apiKey, baseUrl = null) {
     try {
-        const response = await fetch(`${config.lexa.baseUrl}/languages/`, {
+        // Utiliser l'URL fournie ou celle de la config
+        const url = baseUrl || config.lexa.baseUrl;
+        const response = await fetch(`${url}/languages/`, {
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json'
@@ -303,10 +331,12 @@ async function testLexaApiKey(apiKey) {
 }
 
 // Test des clés API Lara
-async function testLaraApiKeys(accessKeyId, accessKeySecret) {
+async function testLaraApiKeys(accessKeyId, accessKeySecret, baseUrl = null) {
     try {
+        // Utiliser l'URL fournie ou celle de la config
+        const url = baseUrl || config.lara.baseUrl;
         // Faire un test simple avec une traduction courte
-        const response = await fetch(`${config.lara.baseUrl}/translate-text`, {
+        const response = await fetch(`${url}/translate-text`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -323,6 +323,14 @@
                 </div>
             </div>
 
+            <div class="form-group">
+                <label for="lexaBaseUrl">Adresse serveur Lexa</label>
+                <input type="text" id="lexaBaseUrl" placeholder="https://api.portail.lexamt.fr/api/v1" />
+                <div class="help-text">
+                    URL de l'API Lexa (production ou test)
+                </div>
+            </div>
+
             <!-- Paramètres Lara (visibles uniquement si Lara est sélectionné) -->
             <div id="laraSettings" class="hidden">
                 <div class="form-group">
@@ -339,6 +347,14 @@
                     </div>
                     <div class="help-text">
                         Obtenez vos clés API depuis votre compte LaraTranslate
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="laraBaseUrl">Adresse serveur Lara</label>
+                    <input type="text" id="laraBaseUrl" placeholder="URL du backend Lara" />
+                    <div class="help-text">
+                        URL de l'API Lara (détectée automatiquement si vide)
                     </div>
                 </div>
 
